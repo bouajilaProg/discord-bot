@@ -5,6 +5,18 @@ from discord.ui import Button, View
 
 score = 0
 checktime = 0
+tries = 6
+
+
+class wordlistner:
+    def __init__(self, msg):
+        self.msg = msg
+
+    def update(self, msg):
+        self.msg = msg
+
+    def getMsg(self, msg):
+        return msg
 
 
 class vueInit(View):
@@ -30,10 +42,11 @@ class vueInit(View):
 
 
 def runBot():
-    TOKEN = 'MTEwMDUyNjYyMTczNzM2MTQ3MA.GxSSZx.nYieR3_mO_gVBXCXyfru-X6JvEI6GcEy84KkE8'
+    TOKEN = 'MTEwMDUyNjYyMTczNzM2MTQ3MA.GN1cj_.FKfZ9He2Utguvx7hcpCtoAMGj8x6HogO8aDJik'
     intents = discord.Intents.default()
     intents.message_content = True
     bot = commands.Bot(intents=intents, command_prefix='!')
+    messageManager = wordlistner("debut")
 
     @bot.command(aliases=["bj", "zwawin"])
     async def blackjack(ctx):
@@ -76,11 +89,48 @@ def runBot():
                         lost = False
                     else:
                         await ctx.send("fles is happy \n *you lost*")
-                        lost=False
+                        lost = False
 
             await vue.disableAll()
         if (lost):
             await ctx.send("fles is happy \n *you lost*")
+
+    @bot.command(aliases=["wordgame"])
+    async def wordly(ctx):
+        await ctx.send("hello in my wordle ")
+        f = open("botwords.txt", "r")
+        ch = f.read()
+        ch = ch.replace("\n", "")
+        words = ch.split(" ")
+        word = words[ri(0, len(words))]
+        word = word.upper()
+        await ctx.send(f"your word is {word}")
+
+        @bot.event
+        async def on_message(msg):
+            myword = msg.content.upper()
+            if (not msg.author.bot) and len(str(myword).strip()) == 5:
+                global tries
+                resp = ""
+                if (tries > 0):
+                    tries -= 1
+                    if myword == word:
+                        await msg.channel.send("**"+myword+"**")
+                        await msg.channel.send("you got it ya bro ")
+                        myword = ""
+                    else:
+                        for i in range(len(myword)):
+                            if myword[i] == word[i]:
+                                resp += "**"+myword[i]+"** "
+                            elif myword[i] in word:
+                                resp += "__"+myword[i]+"__ "
+                            else:
+                                resp += "~~"+myword[i]+"~~ "
+                        if (tries == 0):
+                            resp = f"you lost the word was {word}"
+                            tries = 6
+                        await msg.channel.send(resp)
+
     bot.run(TOKEN)
 
 
